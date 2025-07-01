@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img src="path/to/your/screenshot.png" alt="ChromaType in action" width="800">
+  <img src="screenshot.png" alt="ChromaType in action" width="800">
 </p>
 
 ## About The Project
