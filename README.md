@@ -20,7 +20,7 @@ ChromaType is a lightweight web utility for creating beautiful, colorful text ar
 
 Whether you're creating a unique social media banner, a stylized title for a project, or just having fun with ASCII art, ChromaType provides a simple, intuitive, and powerful interface to bring your ideas to life. It runs entirely in your browser with no build steps or server-side processing required.
 
-Try it out [here](https://diyard.github.io/chromatype).
+Try it out [here](https://diyard.github.io/ChromaType).
 
 ## Features
 
