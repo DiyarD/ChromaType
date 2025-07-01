@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ChromaType</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body {
+            background-color: #000000;
+            color: #E0E0E0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+        }
+        h1 {
+            color: #97f5b1;
+            font-weight: normal;
+        }
+        #textInput {
+            background-color: #111;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 10px 15px;
+            font-size: 1.2em;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #textInput:focus {
+            outline: none;
+            border-color: #59c1f5;
+        }
+        
+        #output {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 16px;
+            line-height: 0.8;
+            letter-spacing: -2px;
+            
+            
+            background: linear-gradient(90deg, #59c1f5, #97f5b1);
+            
+            
+            -webkit-background-clip: text;
+            background-clip: text;
+            
+            
+            color: transparent;
+            
+            white-space: pre;
+            text-align: left;
+            margin: 0 auto;
+            display: inline-block;
+        }
+
+        
+        .controls-container {
+            background-color: #111;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 600px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 15px auto 50px auto;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .control-group label {
+            font-size: 0.9em;
+            color: #aaa;
+            width: 80px;
+            text-align: right;
+        }
+        #angle-slider {
+            flex-grow: 1;
+        }
+        #angle-value {
+            font-family: 'Consolas', monospace;
+            width: 40px;
+            text-align: left;
+        }
+        #color-stops-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        .color-stop {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: #222;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .color-stop input[type="color"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 30px;
+            height: 30px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 0;
+            cursor: pointer;
+            background-color: transparent;
+        }
+        .color-stop input[type="color"]::-webkit-color-swatch {
+            border-radius: 3px;
+            border: none;
+        }
+        .color-stop input[type="color"]::-moz-color-swatch {
+            border-radius: 3px;
+            border: none;
+        }
+        .remove-color-btn, #add-color-btn {
+            background-color: #333;
+            border: 1px solid #555;
+            color: #ddd;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .remove-color-btn:hover, #add-color-btn:hover {
+            background-color: #444;
+            border-color: #777;
+        }
+        .remove-color-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        
+
+        .action-btn {
+            background-color: #333;
+            border: 1px solid #555;
+            color: #ddd;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .actions-container {
+            margin-top: 25px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: flex-end;
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 30px;
+            z-index: 100;
+        }
+        .action-btn:hover {
+            background-color: #444;
+            border-color: #777;
+        }
+        .action-btn:active {
+            background-color: #222;
+        }
+        .action-btn:disabled {
+            background-color: #2a3b32;
+            color: #97f5b1;
+            border-color: #333;
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <br>
+        <input type="text" id="textInput" value="> DIYAR" oninput="generateArt()">
+        <div class="controls-container">
+            <div class="control-group">
+                <label for="angle-slider">Angle</label>
+                <input type="range" id="angle-slider" min="0" max="360" value="90">
+                <span id="angle-value">90°</span>
+            </div>
+            <div class="control-group">
+                <label>Colors</label>
+                <div id="color-stops-container"></div>
+                <button id="add-color-btn">+</button>
+            </div>
+        </div>
+        <br>
+        <pre id="output">Loading font...</pre>
+        <div class="actions-container">
+            <button id="save-image-btn" class="action-btn" disabled>Save as Image</button>
+            <button id="copy-html-btn" class="action-btn" disabled>Copy as HTML</button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * A lightweight, special-purpose FIGlet renderer designed to parse the specific 'Rebel' font used in this app.
+         */
+        const miniFiglet = {
+            _font: null,
+            parseFont: function(fontData) {
+                if (this._font) return; // Don't parse twice
+
+                const font = { chars: {} };
+                const lines = fontData.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+                const header = lines.shift().split(' ');
+                const hardBlank = header[0].substr(5, 1);
+                font.height = parseInt(header[1], 10);
+                const numCommentLines = parseInt(header[5], 10);
+                lines.splice(0, numCommentLines);
+                const charCodes = [];
+                for (let i = 32; i <= 126; i++) { charCodes.push(i); }
+                let charIndex = 0;
+                const hardBlankRegexp = new RegExp(`\\${hardBlank}`, 'g');
+                while (lines.length > 0 && charIndex < charCodes.length) {
+                    const charData = lines.splice(0, font.height);
+                    if (charData.length === 0 || charData[0] === undefined) break;
+                    const endChar = (charData[0].length > 0) ? charData[0].slice(-1) : null;
+                    const endCharRegex = endChar ? new RegExp(`\\${endChar.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}+$`) : null;
+                    const processedData = [];
+                    for (let i = 0; i < font.height; i++) {
+                        let line = charData[i] || '';
+                        if (endCharRegex) { line = line.replace(endCharRegex, ''); }
+                        processedData.push(line.replace(hardBlankRegexp, ' '));
+                    }
+                    font.chars[charCodes[charIndex]] = processedData;
+                    charIndex++;
+                }
+                this._font = font;
+            },
+            textSync: function(text) {
+                if (!this._font) {
+                    console.error("Font not parsed. Call parseFont() first.");
+                    return "";
+                }
+                
+                const font = this._font;
+                const inputLines = text.split('\n');
+                const outputBlocks = [];
+                for (const lineText of inputLines) {
+                    const outputLines = Array(font.height).fill('');
+                    for (let i = 0; i < lineText.length; i++) {
+                        const charCode = lineText.charCodeAt(i);
+                        const charData = font.chars[charCode] || font.chars[32];
+                        if (charData) {
+                            for (let row = 0; row < font.height; row++) {
+                                outputLines[row] += charData[row] || '';
+                            }
+                        }
+                    }
+                    outputBlocks.push(outputLines);
+                }
+                return [].concat(...outputBlocks).join('\n');
+            }
+        };
+
+        // --- Main Application Logic ---
+        
+        const textInput = document.getElementById('textInput');
+        const output = document.getElementById('output');
+        const angleSlider = document.getElementById('angle-slider');
+        const angleValue = document.getElementById('angle-value');
+        const colorStopsContainer = document.getElementById('color-stops-container');
+        const addColorBtn = document.getElementById('add-color-btn');
+        const saveImageBtn = document.getElementById('save-image-btn');
+        const copyHtmlBtn = document.getElementById('copy-html-btn');
+
+        let gradientState = {
+            angle: 90,
+            colors: ['#59c1f5', '#97f5b1']
+        };
+
+        function generateArt() {
+            if (!miniFiglet._font) return; // Don't run if font isn't loaded
+            const inputText = textInput.value;
+            const baseArt = miniFiglet.textSync(inputText);
+            let trimmedArt = baseArt.replace(/(\n\s*)+$/g, '\n');
+            output.textContent = trimmedArt;
+        }
+
+        // ... other functions (updateGradient, renderColorStops, saveAsImage, copyAsHtml) are unchanged ...
+        function updateGradient() { const gradientString = `linear-gradient(${gradientState.angle}deg, ${gradientState.colors.join(', ')})`; output.style.background = gradientString; output.style.webkitBackgroundClip = 'text'; output.style.backgroundClip = 'text'; }
+        function renderColorStops() { colorStopsContainer.innerHTML = ''; gradientState.colors.forEach((color, index) => { const stopElement = document.createElement('div'); stopElement.className = 'color-stop'; const colorInput = document.createElement('input'); colorInput.type = 'color'; colorInput.value = color; colorInput.addEventListener('input', (e) => { gradientState.colors[index] = e.target.value; updateGradient(); }); const removeBtn = document.createElement('button'); removeBtn.className = 'remove-color-btn'; removeBtn.textContent = 'x'; removeBtn.disabled = gradientState.colors.length <= 2; removeBtn.addEventListener('click', () => { gradientState.colors.splice(index, 1); renderColorStops(); updateGradient(); }); stopElement.appendChild(colorInput); stopElement.appendChild(removeBtn); colorStopsContainer.appendChild(stopElement); }); }
+        function saveAsImage() { const node = document.getElementById('output'); const originalText = saveImageBtn.textContent; saveImageBtn.disabled = true; saveImageBtn.textContent = "Processing..."; const capture = () => { return htmlToImage.toPng(node, { backgroundColor: '#000000', pixelRatio: 2, skipFonts: true, cacheBust: true, style: { transform: 'scale(1)', transformOrigin: 'top left' } }); }; capture().then(() => new Promise(resolve => setTimeout(resolve, 100))).then(() => capture()).then(function (dataUrl) { const link = document.createElement('a'); link.download = 'dos-rebel-art.png'; link.href = dataUrl; link.click(); }).catch(function (error) { console.error('Image generation failed!', error); alert('Could not save image. See console for details.'); }).finally(() => { saveImageBtn.disabled = false; saveImageBtn.textContent = originalText; }); }
+        function copyAsHtml() { const element = document.getElementById('output'); const styles = window.getComputedStyle(element); let inlineStyle = `background-image: ${styles.getPropertyValue('background-image')}; -webkit-background-clip: text; background-clip: text; color: transparent; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 16px; line-height: 0.8; letter-spacing: -2px; white-space: pre; text-align: left; display: inline-block;`; const htmlToCopy = `<pre style="${inlineStyle.trim()}">${element.textContent}</pre>`; navigator.clipboard.writeText(htmlToCopy).then(() => { const originalText = copyHtmlBtn.textContent; copyHtmlBtn.textContent = 'Copied!'; copyHtmlBtn.disabled = true; setTimeout(() => { copyHtmlBtn.textContent = originalText; copyHtmlBtn.disabled = false; }, 2000); }).catch(err => { console.error('Failed to copy HTML:', err); alert('Failed to copy HTML. Your browser may not support the Clipboard API or you are not in a secure context (https).'); }); }
+     
+        // --- Initialization ---
+
+        function startApp() {
+            // This function runs only after the font is successfully loaded.
+            generateArt();
+            renderColorStops();
+            updateGradient();
+            
+            // Enable controls
+            saveImageBtn.disabled = false;
+            copyHtmlBtn.disabled = false;
+            textInput.disabled = false;
+
+            // Wire up event listeners
+            angleSlider.addEventListener('input', (e) => { gradientState.angle = e.target.value; angleValue.textContent = `${gradientState.angle}°`; updateGradient(); });
+            addColorBtn.addEventListener('click', () => { if (gradientState.colors.length < 10) { gradientState.colors.push('#ffffff'); renderColorStops(); updateGradient(); } });
+            saveImageBtn.addEventListener('click', saveAsImage);
+            copyHtmlBtn.addEventListener('click', copyAsHtml);
+        }
+
+        async function loadFontAndInitialize() {
+            try {
+                // Fetch the font file from the same directory
+                const response = await fetch('rebel.flf');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const fontData = await response.text();
+                
+                // Parse the font data
+                miniFiglet.parseFont(fontData);
+
+                // Now that the font is ready, start the main application
+                startApp();
+
+            } catch (error) {
+                console.error("Failed to load or parse font:", error);
+                output.style.color = '#ff6b6b'; // Make error visible
+                output.textContent = `Error: Could not load font file 'rebel.flf'.\n\nPlease check the file exists and the browser console for details.`;
+            }
+        }
+        
+        // Start the loading process when the page loads
+        window.onload = loadFontAndInitialize;
+
+    </script>
+</body>
+</html>
+
